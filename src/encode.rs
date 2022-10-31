@@ -87,9 +87,9 @@ fn encode_impl_all<W: Writer>(out: W, data: &[u8], channels: Channels) -> Result
 ///
 /// Can be used to pre-allocate the buffer to encode the image into.
 #[inline]
-pub fn encode_max_len(width: u32, height: u32, channels: impl Into<u8>) -> usize {
-    let (width, height) = (width as usize, height as usize);
-    let n_pixels = width.saturating_mul(height);
+pub fn encode_max_len(width: u32, height: u32, depth: u32, channels: impl Into<u8>) -> usize {
+    let (width, height, depth) = (width as usize, height as usize, depth as usize);
+    let n_pixels = width.saturating_mul(height).saturating_mul(depth);
     QOI_HEADER_SIZE
         + n_pixels.saturating_mul(channels.into() as usize)
         + n_pixels
@@ -101,16 +101,16 @@ pub fn encode_max_len(width: u32, height: u32, channels: impl Into<u8>) -> usize
 /// Returns the total number of bytes written.
 #[inline]
 pub fn encode_to_buf(
-    buf: impl AsMut<[u8]>, data: impl AsRef<[u8]>, width: u32, height: u32,
+    buf: impl AsMut<[u8]>, data: impl AsRef<[u8]>, width: u32, height: u32, depth: u32
 ) -> Result<usize> {
-    Encoder::new(&data, width, height)?.encode_to_buf(buf)
+    Encoder::new(&data, width, height, depth)?.encode_to_buf(buf)
 }
 
 /// Encode the image into a newly allocated vector.
 #[cfg(any(feature = "alloc", feature = "std"))]
 #[inline]
-pub fn encode_to_vec(data: impl AsRef<[u8]>, width: u32, height: u32) -> Result<Vec<u8>> {
-    Encoder::new(&data, width, height)?.encode_to_vec()
+pub fn encode_to_vec(data: impl AsRef<[u8]>, width: u32, height: u32, depth: u32) -> Result<Vec<u8>> {
+    Encoder::new(&data, width, height, depth)?.encode_to_vec()
 }
 
 /// Encode QOI images into buffers or into streams.
@@ -126,14 +126,14 @@ impl<'a> Encoder<'a> {
     /// are 3 or 4). The color space will be set to sRGB by default.
     #[inline]
     #[allow(clippy::cast_possible_truncation)]
-    pub fn new(data: &'a (impl AsRef<[u8]> + ?Sized), width: u32, height: u32) -> Result<Self> {
+    pub fn new(data: &'a (impl AsRef<[u8]> + ?Sized), width: u32, height: u32, depth: u32) -> Result<Self> {
         let data = data.as_ref();
         let mut header =
-            Header::try_new(width, height, Channels::default(), ColorSpace::default())?;
+            Header::try_new(width, height, depth, Channels::default(), ColorSpace::default())?;
         let size = data.len();
         let n_channels = size / header.n_pixels();
         if header.n_pixels() * n_channels != size {
-            return Err(Error::InvalidImageLength { size, width, height });
+            return Err(Error::InvalidImageLength { size, width, height, depth });
         }
         header.channels = Channels::try_from(n_channels.min(0xff) as u8)?;
         Ok(Self { data, header })

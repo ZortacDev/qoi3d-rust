@@ -13,9 +13,9 @@ pub enum Error {
     /// Invalid color space: expected 0 or 1
     InvalidColorSpace { colorspace: u8 },
     /// Invalid image dimensions: can't be empty or larger than 400Mp
-    InvalidImageDimensions { width: u32, height: u32 },
+    InvalidImageDimensions { width: u32, height: u32, depth: u32 },
     /// Image dimensions are inconsistent with image buffer length
-    InvalidImageLength { size: usize, width: u32, height: u32 },
+    InvalidImageLength { size: usize, width: u32, height: u32, depth: u32},
     /// Output buffer is too small to fit encoded/decoded image
     OutputBufferTooSmall { size: usize, required: usize },
     /// Input buffer ended unexpectedly before decoding was finished
@@ -42,11 +42,11 @@ impl Display for Error {
             Self::InvalidColorSpace { colorspace } => {
                 write!(f, "invalid color space: {} (expected 0 or 1)", colorspace)
             }
-            Self::InvalidImageDimensions { width, height } => {
-                write!(f, "invalid image dimensions: {}x{}", width, height)
+            Self::InvalidImageDimensions { width, height, depth } => {
+                write!(f, "invalid image dimensions: {}x{}x{}", width, height, depth)
             }
-            Self::InvalidImageLength { size, width, height } => {
-                write!(f, "invalid image length: {} bytes for {}x{}", size, width, height)
+            Self::InvalidImageLength { size, width, height, depth } => {
+                write!(f, "invalid image length: {} bytes for {}x{}x{}", size, width, height, depth)
             }
             Self::OutputBufferTooSmall { size, required } => {
                 write!(f, "output buffer size too small: {} (required: {})", size, required)

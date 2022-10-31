@@ -7,7 +7,7 @@ pub const QOI_OP_RGBA: u8 = 0xff; // 11111111
 
 pub const QOI_MASK_2: u8 = 0xc0; // (11)000000
 
-pub const QOI_HEADER_SIZE: usize = 14;
+pub const QOI_HEADER_SIZE: usize = 18;
 
 pub const QOI_PADDING: [u8; 8] = [0, 0, 0, 0, 0, 0, 0, 0x01]; // 7 zeros and one 0x01 marker
 pub const QOI_PADDING_SIZE: usize = 8;
